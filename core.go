@@ -140,11 +140,11 @@ func ExtractDocument(doc *html.Node, opts Options) (*ExtractResult, error) {
 	// cutting up to two full DOM clones per call.
 	needBackup := opts.EnableFallback || opts.Focus != FavorPrecision
 	if !opts.OwnDocument {
-		doc = dom.Clone(doc, true)
+		doc = cloneNode(doc, true)
 	}
 	var docBackup *html.Node
 	if needBackup {
-		docBackup = dom.Clone(doc, true)
+		docBackup = cloneNode(doc, true)
 	}
 
 	// Clean and convert HTML tags

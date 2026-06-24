@@ -45,15 +45,7 @@ func docCleaning(doc *html.Node, opts Options) {
 		cleaningList["tr"] = struct{}{}
 	} else {
 		for _, figure := range dom.QuerySelectorAll(doc, "figure") {
-			var hasTableDescendant bool
-			for _, child := range dom.GetElementsByTagName(figure, "*") {
-				if dom.TagName(child) == "table" {
-					hasTableDescendant = true
-					break
-				}
-			}
-
-			if hasTableDescendant {
+			if hasElementByTag(figure, "table") {
 				figure.Data = "div"
 			}
 		}
@@ -73,14 +65,14 @@ func docCleaning(doc *html.Node, opts Options) {
 	}
 
 	// Prevent removal of paragraphs
-	if opts.Focus == FavorRecall && len(dom.GetElementsByTagName(doc, "p")) > 0 {
-		docBackup := dom.Clone(doc, true)
+	if opts.Focus == FavorRecall && hasElementByTag(doc, "p") {
+		docBackup := cloneNode(doc, true)
 		for tagName := range cleaningList {
 			etree.StripElements(doc, false, tagName)
 		}
 
 		// If paragraphs is removed, revert to backup
-		if len(dom.GetElementsByTagName(doc, "p")) == 0 {
+		if !hasElementByTag(doc, "p") {
 			*doc = *docBackup
 		}
 	} else {
@@ -142,9 +134,9 @@ func pruneUnwantedNodes(tree *html.Node, queries []selector.Rule, withBackup ...
 	var backup *html.Node
 	backupEnabled := len(withBackup) > 0 && withBackup[0]
 
-	tree = dom.Clone(tree, true)
+	tree = cloneNode(tree, true)
 	if backupEnabled {
-		backup = dom.Clone(tree, true)
+		backup = cloneNode(tree, true)
 		oldLen = utf8.RuneCountInString(dom.TextContent(tree))
 	}
 

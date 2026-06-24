@@ -34,9 +34,9 @@ func handleTitles(element *html.Node, cache *lru.Cache, opts Options) *html.Node
 		// etree.SetTail(element, "")
 		title = processNode(element, cache, opts)
 	} else {
-		title = dom.Clone(element, false)
+		title = cloneNode(element, false)
 		for _, child := range dom.ChildNodes(element) {
-			clonedChild := dom.Clone(child, true)
+			clonedChild := cloneNode(child, true)
 			processedChild := handleTextNode(clonedChild, cache, false, false, opts)
 
 			if processedChild != nil {
@@ -217,7 +217,7 @@ func isCodeBlockElement(element *html.Node) bool {
 
 // handleCodeBlocks turn element into a properly tagged code block.
 func handleCodeBlocks(element *html.Node) *html.Node {
-	processedElement := dom.Clone(element, true)
+	processedElement := cloneNode(element, true)
 	for _, child := range etree.Iter(element) {
 		child.Data = "done"
 	}
@@ -367,7 +367,7 @@ func handleParagraphs(element *html.Node, potentialTags map[string]struct{}, cac
 	}
 
 	// Clone the element to return
-	processedElement := dom.Clone(element, true)
+	processedElement := cloneNode(element, true)
 	etree.SetTail(processedElement, etree.Tail(element))
 
 	// Mark processed elements as done
@@ -432,7 +432,7 @@ func handleTable(tableElement *html.Node, potentialTags map[string]struct{}, cac
 					} else if inMap(childTag, mapXmlListTags) && opts.Focus == FavorRecall {
 						processedSubChild = handleLists(child, cache, opts)
 						if processedSubChild != nil {
-							etree.Append(newChildElem, dom.Clone(processedSubChild, true))
+							etree.Append(newChildElem, cloneNode(processedSubChild, true))
 							processedSubChild = nil
 						}
 					} else {
@@ -652,7 +652,7 @@ func pruneUnwantedSections(subTree *html.Node, potentialTags map[string]struct{}
 // extractContent find the main content of a page using a set of selectors, then
 // extract relevant elements, strip them of unwanted subparts and convert them.
 func extractContent(doc *html.Node, cache *lru.Cache, opts Options) (*html.Node, string) {
-	backupDoc := dom.Clone(doc, true)
+	backupDoc := cloneNode(doc, true)
 	resultBody := dom.CreateElement("body")
 
 	// Prepare potential tags
