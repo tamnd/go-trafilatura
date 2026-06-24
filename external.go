@@ -63,7 +63,7 @@ func compareExternalExtraction(originalDoc, extractedDoc *html.Node, opts Option
 	logInfo(opts, "trying external extractor for url %q", originalUrl)
 
 	// Prior cleaning
-	cleanedDoc := dom.Clone(originalDoc, true)
+	cleanedDoc := cloneNode(originalDoc, true)
 	if opts.Focus == FavorPrecision {
 		cleanedDoc = pruneUnwantedNodes(cleanedDoc, selector.OverallDiscardedContent)
 	}
@@ -146,7 +146,7 @@ func createFallbackGenerators(doc *html.Node, opts Options) []_FallbackGenerator
 		})
 	} else {
 		generators = append(generators, func() (string, *html.Node) {
-			clone := dom.Clone(doc, true)
+			clone := cloneNode(doc, true)
 			result, _ := distiller.Apply(clone, &distiller.Options{
 				OriginalURL:    opts.OriginalURL,
 				SkipPagination: true})
