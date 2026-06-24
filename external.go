@@ -1,6 +1,6 @@
 // This file is part of go-trafilatura, Go package for extracting readable
 // content, comments and metadata from a web page. Source available in
-// <https://github.com/markusmobius/go-trafilatura>.
+// <https://github.com/tamnd/go-trafilatura>.
 //
 // Copyright (C) 2021 Markus Mobius
 //
@@ -28,8 +28,8 @@ import (
 	"github.com/go-shiori/dom"
 	"github.com/go-shiori/go-readability"
 	distiller "github.com/markusmobius/go-domdistiller"
-	"github.com/markusmobius/go-trafilatura/internal/etree"
-	"github.com/markusmobius/go-trafilatura/internal/selector"
+	"github.com/tamnd/go-trafilatura/internal/etree"
+	"github.com/tamnd/go-trafilatura/internal/selector"
 	"golang.org/x/net/html"
 )
 

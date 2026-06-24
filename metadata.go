@@ -1,6 +1,6 @@
 // This file is part of go-trafilatura, Go package for extracting readable
 // content, comments and metadata from a web page. Source available in
-// <https://github.com/markusmobius/go-trafilatura>.
+// <https://github.com/tamnd/go-trafilatura>.
 //
 // Copyright (C) 2021 Markus Mobius
 //
@@ -32,8 +32,8 @@ import (
 	"github.com/forPelevin/gomoji"
 	"github.com/go-shiori/dom"
 	"github.com/markusmobius/go-htmldate"
-	"github.com/markusmobius/go-trafilatura/internal/etree"
-	"github.com/markusmobius/go-trafilatura/internal/selector"
+	"github.com/tamnd/go-trafilatura/internal/etree"
+	"github.com/tamnd/go-trafilatura/internal/selector"
 	"golang.org/x/net/html"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -133,7 +133,7 @@ func extractMetadata(doc *html.Node, opts Options) Metadata {
 	}
 
 	// Author
-	if metadata.Author == "" {
+	if metadata.Author == "" && !opts.TitleOnlyMetadata {
 		metadata.Author = extractDomAuthor(doc)
 		metadata.Author = removeBlacklistedAuthors(metadata.Author, opts)
 	}
@@ -213,47 +213,53 @@ func extractMetadata(doc *html.Node, opts Options) Metadata {
 		}
 	}
 
-	// Sitename
-	if metadata.Sitename == "" {
-		metadata.Sitename = extractDomSitename(doc)
-	}
-
-	if metadata.Sitename != "" {
-		// Scrap Twitter ID
-		metadata.Sitename = strings.TrimPrefix(metadata.Sitename, "@")
-
-		// Capitalize
-		firstRune, _ := utf8.DecodeRuneInString(metadata.Sitename)
-		if !strings.Contains(metadata.Sitename, ".") && !unicode.IsUpper(firstRune) {
-			metadata.Sitename = cases.Title(language.English).String(metadata.Sitename)
+	// Sitename, categories, tags and license are reported in the metadata only;
+	// they do not influence the extracted content or the resolved URL, so skip
+	// these DOM scans (extractDomAuthor/Sitename/Categories/Tags are the
+	// dominant metadata cost) when the caller asked for the title alone.
+	if !opts.TitleOnlyMetadata {
+		// Sitename
+		if metadata.Sitename == "" {
+			metadata.Sitename = extractDomSitename(doc)
 		}
-	} else if metadata.URL != "" {
-		matches := rxSitenameFinder.FindStringSubmatch(metadata.URL)
-		if len(matches) > 0 {
-			metadata.Sitename = matches[1]
+
+		if metadata.Sitename != "" {
+			// Scrap Twitter ID
+			metadata.Sitename = strings.TrimPrefix(metadata.Sitename, "@")
+
+			// Capitalize
+			firstRune, _ := utf8.DecodeRuneInString(metadata.Sitename)
+			if !strings.Contains(metadata.Sitename, ".") && !unicode.IsUpper(firstRune) {
+				metadata.Sitename = cases.Title(language.English).String(metadata.Sitename)
+			}
+		} else if metadata.URL != "" {
+			matches := rxSitenameFinder.FindStringSubmatch(metadata.URL)
+			if len(matches) > 0 {
+				metadata.Sitename = matches[1]
+			}
 		}
-	}
 
-	// Categories
-	if len(metadata.Categories) == 0 {
-		metadata.Categories = extractDomCategories(doc)
-	}
+		// Categories
+		if len(metadata.Categories) == 0 {
+			metadata.Categories = extractDomCategories(doc)
+		}
 
-	if len(metadata.Categories) != 0 {
-		metadata.Categories = cleanCatTags(metadata.Categories)
-	}
+		if len(metadata.Categories) != 0 {
+			metadata.Categories = cleanCatTags(metadata.Categories)
+		}
 
-	// Tags
-	if len(metadata.Tags) == 0 {
-		metadata.Tags = extractDomTags(doc)
-	}
+		// Tags
+		if len(metadata.Tags) == 0 {
+			metadata.Tags = extractDomTags(doc)
+		}
 
-	if len(metadata.Tags) != 0 {
-		metadata.Tags = cleanCatTags(metadata.Tags)
-	}
+		if len(metadata.Tags) != 0 {
+			metadata.Tags = cleanCatTags(metadata.Tags)
+		}
 
-	// License
-	metadata.License = extractLicense(doc)
+		// License
+		metadata.License = extractLicense(doc)
+	}
 
 	return metadata
 }

@@ -1,6 +1,6 @@
 // This file is part of go-trafilatura, Go package for extracting readable
 // content, comments and metadata from a web page. Source available in
-// <https://github.com/markusmobius/go-trafilatura>.
+// <https://github.com/tamnd/go-trafilatura>.
 //
 // Copyright (C) 2021 Markus Mobius
 //
@@ -143,6 +143,18 @@ type Options struct {
 
 	// PruneSelector is the CSS selector to select nodes to be pruned before extraction.
 	PruneSelector string
+
+	// OwnDocument lets the caller declare that it owns the input *html.Node and
+	// will not reuse it after extraction. When true, ExtractDocument mutates the
+	// input in place instead of cloning it defensively up front, saving one full
+	// DOM clone per call. The original is still backed up for fallback/rescue.
+	OwnDocument bool
+
+	// TitleOnlyMetadata makes metadata extraction compute only the document
+	// title and skip author, sitename, categories, tags, image and license
+	// scanning. Use it when the caller reads only Metadata.Title (Language is
+	// recomputed from the body text regardless). It does not affect content.
+	TitleOnlyMetadata bool
 }
 
 // Config is advanced setting to fine tune the extraction result.

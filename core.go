@@ -1,6 +1,6 @@
 // This file is part of go-trafilatura, Go package for extracting readable
 // content, comments and metadata from a web page. Source available in
-// <https://github.com/markusmobius/go-trafilatura>.
+// <https://github.com/tamnd/go-trafilatura>.
 //
 // Copyright (C) 2021 Markus Mobius
 //
@@ -30,9 +30,9 @@ import (
 
 	"github.com/andybalholm/cascadia"
 	"github.com/go-shiori/dom"
-	"github.com/markusmobius/go-trafilatura/internal/etree"
-	"github.com/markusmobius/go-trafilatura/internal/lru"
-	"github.com/markusmobius/go-trafilatura/internal/selector"
+	"github.com/tamnd/go-trafilatura/internal/etree"
+	"github.com/tamnd/go-trafilatura/internal/lru"
+	"github.com/tamnd/go-trafilatura/internal/selector"
 	"github.com/rs/zerolog"
 	"golang.org/x/net/html"
 )
@@ -129,10 +129,23 @@ func ExtractDocument(doc *html.Node, opts Options) (*ExtractResult, error) {
 		}
 	}
 
-	// Backup document to make sure the original kept untouched
-	doc = dom.Clone(doc, true)
-	docBackup1 := dom.Clone(doc, true)
-	docBackup2 := dom.Clone(doc, true)
+	// Backup document to make sure the original kept untouched.
+	//
+	// docCleaning and convertTags mutate the working tree, and both the fallback
+	// comparison and the baseline rescue need the pristine original. Upstream
+	// clones three times (a defensive copy of the input plus two backups). The
+	// fallback only reads its original (it clones internally) and the baseline
+	// rescue only reads its tree, so one pristine backup serves both. When the
+	// caller owns the document we mutate it in place and skip the defensive copy,
+	// cutting up to two full DOM clones per call.
+	needBackup := opts.EnableFallback || opts.Focus != FavorPrecision
+	if !opts.OwnDocument {
+		doc = dom.Clone(doc, true)
+	}
+	var docBackup *html.Node
+	if needBackup {
+		docBackup = dom.Clone(doc, true)
+	}
 
 	// Clean and convert HTML tags
 	docCleaning(doc, opts)
@@ -155,13 +168,13 @@ func ExtractDocument(doc *html.Node, opts Options) (*ExtractResult, error) {
 
 	// Use fallback if necessary
 	if opts.EnableFallback {
-		postBody, tmpBodyText = compareExternalExtraction(docBackup1, postBody, opts)
+		postBody, tmpBodyText = compareExternalExtraction(docBackup, postBody, opts)
 	}
 
 	// Rescue: try to use original/dirty tree
 	lenText := utf8.RuneCountInString(tmpBodyText)
 	if lenText < opts.Config.MinExtractedSize && opts.Focus != FavorPrecision {
-		postBody, tmpBodyText = baseline(docBackup2)
+		postBody, tmpBodyText = baseline(docBackup)
 	}
 
 	// Tree size sanity check

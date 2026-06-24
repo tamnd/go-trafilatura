@@ -1,4 +1,4 @@
-module github.com/markusmobius/go-trafilatura
+module github.com/tamnd/go-trafilatura
 
 go 1.22.0
 

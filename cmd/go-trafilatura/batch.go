@@ -1,6 +1,6 @@
 // This file is part of go-trafilatura, Go package for extracting readable
 // content, comments and metadata from a web page. Source available in
-// <https://github.com/markusmobius/go-trafilatura>.
+// <https://github.com/tamnd/go-trafilatura>.
 //
 // Copyright (C) 2021 Markus Mobius
 //
@@ -29,7 +29,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/markusmobius/go-trafilatura"
+	"github.com/tamnd/go-trafilatura"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/semaphore"
 )

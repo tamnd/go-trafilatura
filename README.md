@@ -1,4 +1,22 @@
-# Go-Trafilatura
+# Go-Trafilatura (tamnd fork)
+
+This is a fork of [markusmobius/go-trafilatura][upstream] at v1.12.2. It adds two
+opt-in `Options` that cut per-page extraction time roughly in half while keeping
+the extracted content byte-identical:
+
+- `OwnDocument`: when the caller owns the input tree and will not reuse it,
+  `ExtractDocument` mutates it in place instead of taking a defensive clone, and
+  it keeps a single pristine backup for the fallback and rescue paths instead of
+  two. This removes up to two full DOM clones per call.
+- `TitleOnlyMetadata`: skip the author, sitename, category, tag and license DOM
+  scans (the dominant metadata cost) and compute only the title. Content and the
+  resolved URL are unaffected.
+
+Everything else tracks upstream. See `git log` for the exact diff.
+
+[upstream]: https://github.com/markusmobius/go-trafilatura
+
+---
 
 Go-Trafilatura is a Go package and command-line tool which seamlessly downloads, parses, and scrapes web page data: it can extract metadata, main body text and comments while preserving parts of the text formatting and page structure.
 

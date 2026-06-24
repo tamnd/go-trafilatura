@@ -5,9 +5,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/go-shiori/dom"
-	"github.com/markusmobius/go-trafilatura/internal/etree"
-	"github.com/markusmobius/go-trafilatura/internal/lru"
-	"github.com/markusmobius/go-trafilatura/internal/selector"
+	"github.com/tamnd/go-trafilatura/internal/etree"
+	"github.com/tamnd/go-trafilatura/internal/lru"
+	"github.com/tamnd/go-trafilatura/internal/selector"
 	"golang.org/x/net/html"
 )
 
