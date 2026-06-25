@@ -30,10 +30,10 @@ import (
 
 	"github.com/andybalholm/cascadia"
 	"github.com/go-shiori/dom"
+	"github.com/rs/zerolog"
 	"github.com/tamnd/go-trafilatura/internal/etree"
 	"github.com/tamnd/go-trafilatura/internal/lru"
 	"github.com/tamnd/go-trafilatura/internal/selector"
-	"github.com/rs/zerolog"
 	"golang.org/x/net/html"
 )
 
@@ -166,9 +166,16 @@ func ExtractDocument(doc *html.Node, opts Options) (*ExtractResult, error) {
 	// Extract content
 	postBody, tmpBodyText := extractContent(doc, cache, opts)
 
-	// Use fallback if necessary
+	// Use fallback if necessary. The fallback (Readability and Dom Distiller)
+	// recovers content when the primary extractor came up short, but it is the
+	// dominant cost on bulk corpora. When FallbackMinTextSize is set, skip it for
+	// pages whose primary extraction already produced enough text, since a long
+	// primary result is almost never improved by the fallback.
 	if opts.EnableFallback {
-		postBody, tmpBodyText = compareExternalExtraction(docBackup, postBody, opts)
+		primaryLen := utf8.RuneCountInString(tmpBodyText)
+		if opts.FallbackMinTextSize <= 0 || primaryLen < opts.FallbackMinTextSize {
+			postBody, tmpBodyText = compareExternalExtraction(docBackup, postBody, opts)
+		}
 	}
 
 	// Rescue: try to use original/dirty tree
