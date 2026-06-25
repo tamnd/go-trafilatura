@@ -87,6 +87,16 @@ type Options struct {
 	// This will make the extraction result more precise, but also a bit slower.
 	EnableFallback bool
 
+	// FallbackMinTextSize, when greater than zero, skips the external fallback
+	// (Readability and Dom Distiller) for any document whose primary extraction
+	// already yielded at least this many characters of text. The fallback exists
+	// to recover content when the primary extractor came up short, so a primary
+	// result that is already long is almost never improved by it. On bulk corpora
+	// the fallback dominates CPU, so skipping it on strong pages is a large
+	// speedup at a small recall cost on borderline pages. Zero (the default)
+	// keeps the original behaviour of always running the fallback when enabled.
+	FallbackMinTextSize int
+
 	// FallbackCandidates is user specified candidates that will be checked by Trafilatura
 	// when EnableFallback set to True. This is useful if user already use Readability
 	// and Dom Distiller before, or if user want to provide his own candidates. As mentioned
